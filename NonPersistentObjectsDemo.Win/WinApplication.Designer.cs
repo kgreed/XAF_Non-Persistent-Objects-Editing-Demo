@@ -77,7 +77,7 @@
             this.Modules.Add(this.module3);
             this.Modules.Add(this.module4);
             this.Modules.Add(this.securityModule1);
-            this.Security = this.securityStrategyComplex1;
+            //this.Security = this.securityStrategyComplex1;
             this.Modules.Add(this.objectsModule);
             this.Modules.Add(this.cloneObjectModule);
             this.Modules.Add(this.conditionalAppearanceModule);

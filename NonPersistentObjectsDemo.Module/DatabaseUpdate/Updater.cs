@@ -22,7 +22,7 @@ namespace NonPersistentObjectsDemo.Module.DatabaseUpdate {
         }
         public override void UpdateDatabaseAfterUpdateSchema() {
             base.UpdateDatabaseAfterUpdateSchema();
-            CreateSecurityObjects();
+            //CreateSecurityObjects();
             CreateDemoObjects();
             ObjectSpace.CommitChanges(); //This line persists created object(s).
         }

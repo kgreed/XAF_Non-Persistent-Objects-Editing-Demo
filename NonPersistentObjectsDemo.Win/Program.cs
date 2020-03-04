@@ -30,8 +30,8 @@ namespace NonPersistentObjectsDemo.Win {
             }
             Tracing.Initialize();
             NonPersistentObjectsDemoWindowsFormsApplication winApplication = new NonPersistentObjectsDemoWindowsFormsApplication();
-			SecurityStrategy security = (SecurityStrategy)winApplication.Security;
-            security.RegisterXPOAdapterProviders();
+            //SecurityStrategy security = (SecurityStrategy)winApplication.Security;
+            //security.RegisterXPOAdapterProviders();
             if(ConfigurationManager.ConnectionStrings["ConnectionString"] != null) {
                 winApplication.ConnectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
             }

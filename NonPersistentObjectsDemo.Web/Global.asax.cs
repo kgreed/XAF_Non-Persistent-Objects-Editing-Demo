@@ -27,8 +27,8 @@ namespace NonPersistentObjectsDemo.Web {
         protected void Session_Start(Object sender, EventArgs e) {
             Tracing.Initialize();
             WebApplication.SetInstance(Session, new NonPersistentObjectsDemoAspNetApplication());
-            SecurityStrategy security = (SecurityStrategy)WebApplication.Instance.Security;
-            security.RegisterXPOAdapterProviders();
+            //SecurityStrategy security = (SecurityStrategy)WebApplication.Instance.Security;
+            //security.RegisterXPOAdapterProviders();
             DevExpress.ExpressApp.Web.Templates.DefaultVerticalTemplateContentNew.ClearSizeLimit();
             WebApplication.Instance.SwitchToNewStyle();
             if(ConfigurationManager.ConnectionStrings["ConnectionString"] != null) {
