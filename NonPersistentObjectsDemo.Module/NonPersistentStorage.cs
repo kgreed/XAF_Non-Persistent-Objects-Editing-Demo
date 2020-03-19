@@ -9,26 +9,35 @@ using DevExpress.Persistent.Base;
 
 namespace NonPersistentObjectsDemo.Module {
 
-    public class Storage {
-        private static Storage CreateInstance() {
-            var storage = new Storage();
-            storage.LoadDemoData();
-            return storage;
+    public class CurrentUserServiceProvider<T> {
+        private static Func<T> factory;
+        public static void AddService(Func<T> factory) {
+            CurrentUserServiceProvider<T>.factory = factory;
         }
-        public static Storage GetInstance() {
-            var vm = ValueManager.GetValueManager<Storage>("NP");
-            Storage storage = null;
+        public static T GetService() {
+            var vm = ValueManager.GetValueManager<T>(typeof(CurrentUserServiceProvider<T>).FullName);
+            T result;
             if(vm.CanManageValue) {
-                storage = vm.Value;
-                if(storage == null) {
-                    storage = CreateInstance();
-                    vm.Value = storage;
+                result = vm.Value;
+                if(Equals(result, default(T))) {
+                    result = factory.Invoke();
+                    vm.Value = result;
                 }
             }
             else {
-                storage = CreateInstance();
+                result = factory.Invoke();
             }
-            return storage;
+            return result;
+        }
+    }
+
+    public class Storage {
+        static Storage() {
+            CurrentUserServiceProvider<Storage>.AddService(() => {
+                var storage = new Storage();
+                storage.LoadDemoData();
+                return storage;
+            });
         }
 
         private DataSet dataSet;
