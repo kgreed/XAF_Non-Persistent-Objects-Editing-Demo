@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,23 @@ namespace NonPersistentObjectsDemo.Module {
             objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
             objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
             objectSpace.Reloaded += ObjectSpace_Reloaded;
+            objectSpace.CustomCommitChanges += ObjectSpace_CustomCommitChanges;
+        }
+        private void ObjectSpace_CustomCommitChanges(object sender, HandledEventArgs e) {
+            var toSave = objectSpace.GetObjectsToSave(false).OfType<TObject>();
+            var toInsert = new List<TObject>();
+            var toUpdate = new List<TObject>();
+            foreach(var obj in toSave) {
+                if(objectSpace.IsNewObject(obj)) {// or check objectMap?
+                    toInsert.Add(obj);
+                }
+                else {
+                    toUpdate.Add(obj);
+                }
+            }
+            var toDelete = objectSpace.GetObjectsToDelete(false).OfType<TObject>().ToList();
+            factory.SaveObjects(toInsert, toUpdate, toDelete);
+            //e.Handled = false;// !!!
         }
         private void ObjectSpace_Reloaded(object sender, EventArgs e) {
             objectMap.Clear();

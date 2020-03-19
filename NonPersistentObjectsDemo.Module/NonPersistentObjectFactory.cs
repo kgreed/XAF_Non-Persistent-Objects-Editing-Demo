@@ -11,6 +11,7 @@ namespace NonPersistentObjectsDemo.Module {
     public abstract class NonPersistentObjectFactoryBase {
         public abstract object GetObjectByKey(Type objectType, object key);
         public abstract IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting);
+        public virtual void SaveObjects(ICollection toInsert, ICollection toUpdate, ICollection toDelete) { }
     }
 
     class NonPersistentObjectFactory : NonPersistentObjectFactoryBase {
@@ -41,6 +42,9 @@ namespace NonPersistentObjectsDemo.Module {
             //if(typeof(NPObjectA) == objectType) {
             //    return storage.GetAllKeys("TableA");
             //}
+            throw new NotImplementedException();
+        }
+        public override void SaveObjects(ICollection toInsert, ICollection toUpdate, ICollection toDelete) {
             throw new NotImplementedException();
         }
     }
