@@ -37,11 +37,14 @@ namespace NonPersistentObjectsDemo.Module {
         }
         private void Application_SetupComplete(object sender, EventArgs e) {
             nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender);
-            //nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-            //    new TransientNonPersistentObjectAdapter<NPObjectA, Guid>(npos, new NonPersistentObjectFactory(Storage.GetInstance()));
-            //});
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
                 new TransientNonPersistentObjectAdapter<LiveReport, Guid>(npos, new LiveReportFactory());
+            });
+            nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
+                new TransientNonPersistentObjectAdapter<Account, string>(npos, new PostOfficeFactory());
+            });
+            nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
+                new TransientNonPersistentObjectAdapter<Message, string>(npos, new PostOfficeFactory());
             });
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {
