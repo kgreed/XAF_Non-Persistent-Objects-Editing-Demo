@@ -38,6 +38,5 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 OnPropertyChanged(name);
             }
         }
-        //public virtual void Reset() { }
     }
 }

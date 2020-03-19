@@ -10,7 +10,7 @@ namespace NonPersistentObjectsDemo.Module {
 
     public abstract class NonPersistentObjectFactoryBase {
         public abstract object GetObjectByKey(Type objectType, object key);
-        public abstract IEnumerable GetObjectsQuery(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting);
+        public abstract IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting);
     }
 
     class NonPersistentObjectFactory : NonPersistentObjectFactoryBase {
@@ -37,7 +37,7 @@ namespace NonPersistentObjectsDemo.Module {
             //}
             throw new NotImplementedException();
         }
-        public override IEnumerable GetObjectsQuery(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
+        public override IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
             //if(typeof(NPObjectA) == objectType) {
             //    return storage.GetAllKeys("TableA");
             //}

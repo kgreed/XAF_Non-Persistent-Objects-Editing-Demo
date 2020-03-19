@@ -52,7 +52,7 @@ namespace NonPersistentObjectsDemo.Module {
             }
         }
         private IList GetList(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
-            var query = factory.GetObjectsQuery(objectType, criteria, sorting);
+            var query = factory.GetObjectKeys(objectType, criteria, sorting);
             var list = new List<TObject>();
             foreach(var key in query) {
                 TObject obj = objectSpace.GetObjectByKey<TObject>(key);

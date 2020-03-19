@@ -9,7 +9,7 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module {
 
     public class NonPersistentObjectSpaceHelper : IDisposable {
-        public static bool UseSharedAdditionalObjectSpace = false; //TODO: remove
+        public static bool UseSharedAdditionalObjectSpace = false; //TODO: remove + unused members
         private XafApplication application;
         private IObjectSpace additionalObjectSpace;
         public List<Action<NonPersistentObjectSpace>> AdapterCreators { get; }

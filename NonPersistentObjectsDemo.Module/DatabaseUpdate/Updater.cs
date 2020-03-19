@@ -23,7 +23,7 @@ namespace NonPersistentObjectsDemo.Module.DatabaseUpdate {
         public override void UpdateDatabaseAfterUpdateSchema() {
             base.UpdateDatabaseAfterUpdateSchema();
             //CreateSecurityObjects();
-            CreateDemoObjects();
+            CreateTQBFDemoObjects();
             ObjectSpace.CommitChanges(); //This line persists created object(s).
         }
 
@@ -38,7 +38,7 @@ namespace NonPersistentObjectsDemo.Module.DatabaseUpdate {
 
         static string[] productNames = { "Fresh Flesh", "Soaked Souls", "Elixir of Eternity", "Bones Barbeque", "Cranium Cake" };
 
-        private void CreateDemoObjects() {
+        private void CreateTQBFDemoObjects() {
             var rnd = new Random(8573);
             IList<Product> products = null;
             if(ObjectSpace.GetObjectsCount(typeof(Product), null) == 0) {

@@ -194,7 +194,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             }
             throw new NotImplementedException();
         }
-        public override IEnumerable GetObjectsQuery(Type objectType, CriteriaOperator criteria, IList<SortProperty> sorting) {
+        public override IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<SortProperty> sorting) {
             if(typeof(LiveReport) == objectType) {
                 return objectData.Keys.ToArray();
             }
