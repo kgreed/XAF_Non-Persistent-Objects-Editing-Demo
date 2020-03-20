@@ -60,8 +60,8 @@ namespace NonPersistentObjectsDemo.Module {
             }
         }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
-            if(e.SourceObject != null) {
-                if(objectMap.Contains(e.SourceObject)) {
+            if(e.SourceObject != null && objectMap.IsKnown(e.SourceObject.GetType())) {
+                if(objectMap.Contains(e.SourceObject) || objectSpace.IsNewObject(e.SourceObject)) {
                     e.TargetObject = e.SourceObject;
                 }
                 else {

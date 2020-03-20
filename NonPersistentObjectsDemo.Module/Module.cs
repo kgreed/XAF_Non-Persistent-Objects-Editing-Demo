@@ -33,6 +33,7 @@ namespace NonPersistentObjectsDemo.Module {
         public override void Setup(XafApplication application) {
             base.Setup(application);
             // Manage various aspects of the application UI and behavior at the module level.
+            NonPersistentObjectSpace.UseKeyComparisonToDetermineIdentity = true;
             application.SetupComplete += Application_SetupComplete;
         }
         private void Application_SetupComplete(object sender, EventArgs e) {
@@ -41,7 +42,7 @@ namespace NonPersistentObjectsDemo.Module {
                 new TransientNonPersistentObjectAdapter(npos, new LiveReportFactory(), typeof(LiveReport));
             });
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-                new TransientNonPersistentObjectAdapter(npos, new PostOfficeFactory(), typeof(Account), typeof(Message));
+                new TransientNonPersistentObjectAdapter(npos, new PostOfficeFactory(npos), typeof(Account), typeof(Message));
             });
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {
