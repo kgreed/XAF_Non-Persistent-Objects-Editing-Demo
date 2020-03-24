@@ -39,10 +39,12 @@ namespace NonPersistentObjectsDemo.Module {
         private void Application_SetupComplete(object sender, EventArgs e) {
             nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender);
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-                new TransientNonPersistentObjectAdapter(npos, new LiveReportFactory(), typeof(LiveReport));
+                new TransientNonPersistentObjectAdapter(npos, new ObjectMap(typeof(LiveReport)), new LiveReportFactory());
             });
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-                new TransientNonPersistentObjectAdapter(npos, new PostOfficeFactory(npos), typeof(Account), typeof(Message));
+                var types = new Type[] { typeof(Account), typeof(Message) };
+                var map = new ObjectMap(types);
+                new TransientNonPersistentObjectAdapter(npos, map, new PostOfficeFactory(npos, map));
             });
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {

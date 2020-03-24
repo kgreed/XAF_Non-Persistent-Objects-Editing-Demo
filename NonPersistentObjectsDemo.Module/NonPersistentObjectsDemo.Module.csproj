@@ -132,6 +132,7 @@
     <Compile Include="BusinessObjects\PO.cs" />
     <Compile Include="BusinessObjects\TQBF.cs" />
     <Compile Include="Controllers\LiveReportController.cs" />
+    <Compile Include="Controllers\PostOfficeController.cs" />
     <Compile Include="NonPersistentObjectFactory.cs" />
     <Compile Include="NonPersistentObjectSpaceHelper.cs" />
     <Compile Include="DatabaseUpdate\Updater.cs" />

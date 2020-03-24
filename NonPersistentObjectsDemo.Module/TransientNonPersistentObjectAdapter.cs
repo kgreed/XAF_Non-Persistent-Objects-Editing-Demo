@@ -14,10 +14,10 @@ namespace NonPersistentObjectsDemo.Module {
         private NonPersistentObjectSpace objectSpace;
         private NonPersistentObjectFactoryBase factory;
         private ObjectMap objectMap;
-        public TransientNonPersistentObjectAdapter(NonPersistentObjectSpace objectSpace, NonPersistentObjectFactoryBase factory, params Type[] types) {
+        public TransientNonPersistentObjectAdapter(NonPersistentObjectSpace objectSpace, ObjectMap objectMap, NonPersistentObjectFactoryBase factory) {
             this.objectSpace = objectSpace;
             this.factory = factory;
-            this.objectMap = new ObjectMap(types);
+            this.objectMap = objectMap;
             objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
             objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
             objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
@@ -51,7 +51,7 @@ namespace NonPersistentObjectsDemo.Module {
                 if(obj == null) {
                     obj = factory.GetObjectByKey(e.ObjectType, e.Key);
                     if(obj!= null) {
-                        objectMap.Add(e.ObjectType, e.Key, obj);
+                        //objectMap.Add(e.ObjectType, e.Key, obj);
                     }
                 }
                 if(obj!= null) {
@@ -61,7 +61,7 @@ namespace NonPersistentObjectsDemo.Module {
         }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
             if(e.SourceObject != null && objectMap.IsKnown(e.SourceObject.GetType())) {
-                if(objectMap.Contains(e.SourceObject) || objectSpace.IsNewObject(e.SourceObject)) {
+                if(objectMap.Contains(e.SourceObject) || IsNewObject(e.SourceObject)) {
                     e.TargetObject = e.SourceObject;
                 }
                 else {
@@ -76,6 +76,10 @@ namespace NonPersistentObjectsDemo.Module {
                 collection.ObjectsGetting += DynamicCollection_ObjectsGetting;
                 e.Objects = collection;
             }
+        }
+        private static bool IsNewObject(object obj) {
+            var sourceObjectSpace = BaseObjectSpace.FindObjectSpaceByObject(obj);
+            return sourceObjectSpace == null ? false : sourceObjectSpace.IsNewObject(obj);
         }
         private IList GetList(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
             var query = factory.GetObjectKeys(objectType, criteria, sorting);
@@ -92,9 +96,9 @@ namespace NonPersistentObjectsDemo.Module {
         }
     }
 
-    class ObjectMap {
+    public class ObjectMap {
         private Dictionary<Type, Dictionary<Object, Object>> typeMap;
-        public ObjectMap(Type[] types) {
+        public ObjectMap(params Type[] types) {
             this.typeMap = new Dictionary<Type, Dictionary<object, object>>();
             foreach(var type in types) {
                 typeMap.Add(type, new Dictionary<object, object>());
