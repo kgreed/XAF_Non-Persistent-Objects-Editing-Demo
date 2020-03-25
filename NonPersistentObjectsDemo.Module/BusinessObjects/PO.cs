@@ -338,6 +338,62 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             };
             Mappings.Add(typeof(Message), mMessage);
             DataStore.UpdateSchema(false, mAccount.Table, mMessage.Table);
+            CreateDemoData();
+        }
+        void CreateDemoData() {
+            var inMemoryDataStore = (InMemoryDataStore)DataStore;
+            var ds = new DataSet();
+            using(var ms = new System.IO.MemoryStream()) {
+                using(var writer = System.Xml.XmlWriter.Create(ms)) {
+                    inMemoryDataStore.WriteXml(writer);
+                    writer.Flush();
+                }
+                ms.Flush();
+                ms.Position = 0;
+                ds.ReadXml(ms);
+            }
+            var rnd = new Random();
+            var idsAccount = new List<string>();
+            var dtAccounts = ds.Tables["Accounts"];
+            for(int i = 0; i < 200; i++) {
+                var id = MakeId(rnd, 20);
+                idsAccount.Add(id);
+                dtAccounts.Rows.Add(id, "User-" + id);
+            }
+            var dtMessages = ds.Tables["Messages"];
+            for(int i = 0; i < 5000; i++) {
+                var id1 = rnd.Next(idsAccount.Count);
+                var id2 = rnd.Next(idsAccount.Count - 1);
+                dtMessages.Rows.Add(null, MakeBlah(rnd, rnd.Next(7)), MakeBlah(rnd, 5 + rnd.Next(100)),
+                    idsAccount[id1], idsAccount[(id1 + id2 + 1) % idsAccount.Count]);
+            }
+            ds.AcceptChanges();
+            using(var ms = new System.IO.MemoryStream()) {
+                ds.WriteXml(ms, XmlWriteMode.WriteSchema);
+                ms.Flush();
+                ms.Position = 0;
+                using(var reader = System.Xml.XmlReader.Create(ms)) {
+                    inMemoryDataStore.ReadXml(reader);
+                }
+            }
+        }
+        private string MakeId(Random rnd, int length) {
+            var chars = new char[length];
+            for(int i = 0; i < length; i++) {
+                chars[i] = (char)('a' + rnd.Next(26));
+            }
+            return new String(chars);
+        }
+        private string MakeBlah(Random rnd, int length) {
+            var sb = new StringBuilder();
+            for(var i = 0; i <= length; i++) {
+                if(sb.Length > 0) {
+                    sb.Append(" ");
+                }
+                var w = MakeId(rnd, 1 + rnd.Next(13));
+                sb.Append(w);
+            }
+            return sb.ToString();
         }
     }
 
@@ -349,68 +405,17 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             this.alias = alias;
         }
         protected override CriteriaOperator Visit(OperandProperty theOperand) {
-            return new QueryOperand(table.GetColumn(theOperand.PropertyName), alias);
+            var column = table.GetColumn(theOperand.PropertyName);
+            if(column != null) {
+                return new QueryOperand(table.GetColumn(theOperand.PropertyName), alias);
+            }
+            else {
+                return null;
+            }
         }
         public static CriteriaOperator Process(CriteriaOperator criteria, DBTable table, string alias) {
             return new SimpleDataStoreCriteriaVisitor(table, alias).Process(criteria);
         }
     }
 
-#if false
-    public class PostOfficeClient {
-        static PostOfficeClient() {
-            GlobalServiceProvider<PostOfficeClient>.AddService(() => new PostOfficeClient());
-        }
-        private DataSet dataSet;
-        public PostOfficeClient() {
-            dataSet = new DataSet();
-            {
-                var dt = dataSet.Tables.Add("Accounts");
-                var colID = dt.Columns.Add("UserName", typeof(string));
-                dt.Columns.Add("PublicName", typeof(string));
-                dt.PrimaryKey = new DataColumn[] { colID };
-            }
-            {
-                var dt = dataSet.Tables.Add("Messages");
-                var colID = dt.Columns.Add("ID", typeof(string));
-                dt.Columns.Add("Subject", typeof(string));
-                dt.Columns.Add("Body", typeof(string));
-                dt.Columns.Add("Sender", typeof(string));
-                dt.Columns.Add("Recepient", typeof(string));
-                dt.PrimaryKey = new DataColumn[] { colID };
-            }
-            LoadDemoData();
-        }
-        public void LoadDemoData() {
-            var dt = dataSet.Tables["Accounts"];
-            dt.LoadDataRow(new object[] { "Jack1234", "Jack The Nipper" }, LoadOption.OverwriteChanges);
-            dt.LoadDataRow(new object[] { "Paul555", "Awesome Paul" }, LoadOption.OverwriteChanges);
-            dt.LoadDataRow(new object[] { "HillBilly", "Billy Hill" }, LoadOption.OverwriteChanges);
-            var dt2 = dataSet.Tables["Messages"];
-            dt2.LoadDataRow(new object[] { "0123456789abcdef", "Feedback", "You're welcome!", "Paul555", "HillBilly" }, LoadOption.OverwriteChanges);
-        }
-
-        internal void SaveChanges() {
-            dataSet.AcceptChanges();
-        }
-        internal DataRow FindRow(string tableName, object key) {
-            return dataSet.Tables[tableName].Rows.Find(key);
-        }
-        internal IList<DataRow> GetRows(string tableName, string filter) {
-            var f = CriteriaToWhereClauseHelper.GetDataSetWhere(CriteriaOperator.Parse(filter));
-            return dataSet.Tables[tableName].Select(f);
-        }
-        internal DataRow NewRow(string tableName) {
-            var table = dataSet.Tables[tableName];
-            var row = table.NewRow();
-            return row;
-        }
-        internal void Accept(DataRow row) {
-            if(row.Table.Rows.IndexOf(row) < 0) {
-                row.Table.Rows.Add(row);
-            }
-            row.AcceptChanges();
-        }
-    }
-#endif
 }
