@@ -179,6 +179,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             objectData.Add(Guid.NewGuid(), new LiveReportData() { Name = "Delivered this week", Status = OrderStatus.Delivered, Period = 7 });
         }
 
+        private ObjectMap objectMap;
+        public LiveReportFactory(ObjectMap objectMap) {
+            this.objectMap = objectMap;
+        }
         public override object GetObjectByKey(Type objectType, object key) {
             if(typeof(LiveReport) == objectType) {
                 LiveReport obj = null;
@@ -190,6 +194,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     obj.SetPeriod(data.Period);
                     obj.SetStatus(data.Status);
                 }
+                objectMap.Add(objectType, key, obj);
                 return obj;
             }
             throw new NotImplementedException();

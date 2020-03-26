@@ -74,13 +74,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
+
     public class PostOfficeFactory : NonPersistentObjectFactoryBase {
         private PostOfficeClient Storage => GlobalServiceProvider<PostOfficeClient>.GetService();
-        private IObjectSpace objectSpace;
         private bool isLoading = false;
         private ObjectMap objectMap;
-        public PostOfficeFactory(IObjectSpace objectSpace, ObjectMap objectMap) {
-            this.objectSpace = objectSpace;
+        public PostOfficeFactory(ObjectMap objectMap) {
             this.objectMap = objectMap;
         }
         public override object GetObjectByKey(Type objectType, object key) {
@@ -88,195 +87,41 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 throw new ArgumentNullException(nameof(key));
             }
             if(Storage.Mappings.TryGetValue(objectType, out var mapping)) {
-                if(isLoading) {
-                }
-                var objects = LoadObjects(mapping, objectType, BuildByKeyCriteria(objectType, key));
-                if(objects.Count == 1) {
-                    return objects[0];
-                }
-                if(objects.Count == 0) {
-                    return null;
-                }
-                throw new DataException();
+                return WrapLoading(() => {
+                    var loader = new DataStoreObjectLoader(Storage.Mappings, Storage.DataStore, objectMap);
+                    return loader.LoadObjectByKey(objectType, key);
+                });
             }
             throw new NotImplementedException();
         }
         public override IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<SortProperty> sorting) {
             if(Storage.Mappings.TryGetValue(objectType, out var mapping)) {
-                var objects = LoadObjects(mapping, objectType, criteria);
-                return objects.Select(o => objectSpace.GetKeyValue(o)).ToArray();
+                var objects = WrapLoading(() => {
+                    var loader = new DataStoreObjectLoader(Storage.Mappings, Storage.DataStore, objectMap);
+                    return loader.LoadObjects(objectType, criteria);
+                });
+                return objects.Select(o => mapping.GetKey(o)).ToArray();
             }
             throw new NotImplementedException();
         }
-        private CriteriaOperator BuildByKeyCriteria(Type objectType, object key) {
-            return new BinaryOperator(objectSpace.GetKeyPropertyName(objectType), key);
-        }
-        private SelectStatement PhaseOne(DataStoreMapping mapping, Type objectType, CriteriaOperator criteria) {
-            var statement = new SelectStatement(mapping.Table, "T");
-            statement.Condition = SimpleDataStoreCriteriaVisitor.Process(criteria, mapping.Table, "T");
-            foreach(var column in mapping.Table.Columns) {
-                statement.Operands.Add(new QueryOperand(column, "T"));
+        private T WrapLoading<T>(Func<T> doer) {
+            if(isLoading) {
+                throw new InvalidOperationException();
             }
-            return statement;
-        }
-        struct PreResult {
-            public DataStoreMapping Mapping;
-            public Type ObjectType;
-            public SelectStatement Statement;
-        }
-        private List<object> PhaseTwo(DataStoreMapping mapping, Type objectType, SelectStatementResult result, List<PreResult> toLoad) {
-            List<object> objects = new List<object>();
-            int keyColumnIndex = mapping.Table.Columns.IndexOf(mapping.Table.GetColumn(objectSpace.GetKeyPropertyName(objectType)));
-            List<RefColumn> refColumns = FindReferenceColumns(objectType, mapping);
-            foreach(var row in result.Rows) {
-                var key = row.Values[keyColumnIndex];
-                var obj = objectMap.Get(objectType, key);
-                if(obj == null) {
-                    obj = mapping.Create();
-                    objectMap.Add(objectType, key, obj);
-                }
-                objects.Add(obj);
-                foreach(var member in refColumns) {
-                    var criteria = BuildByKeyCriteria(member.ObjectType, row.Values[member.ColumnIndex]);
-                    var memberMapping = Storage.Mappings[member.ObjectType];
-                    toLoad.Add(new PreResult() {
-                        Mapping = memberMapping,
-                        ObjectType = member.ObjectType,
-                        Statement = PhaseOne(memberMapping, member.ObjectType, criteria)
-                    });
-                }
-            }
-            return objects;
-        }
-        private List<RefColumn> FindReferenceColumns(Type objectType, DataStoreMapping mapping) {
-            return mapping.RefColumns.Select(s => new RefColumn() { ObjectType = s.Type, ColumnIndex = s.Index }).ToList();
-        }
-        struct RefColumn {
-            public Type ObjectType;
-            public int ColumnIndex;
-        }
-        private void PhaseThree(DataStoreMapping mapping, List<object> objects, SelectStatementResult result) {
-            for(int i = 0; i < objects.Count; i++) {
-                mapping.Load(objects[i], result.Rows[i].Values, objectSpace);
-            }
-        }
-        struct PostResult {
-            public DataStoreMapping Mapping;
-            public List<object> Objects;
-            public SelectStatementResult Result;
-        }
-        private IList<object> LoadObjects(DataStoreMapping mapping0, Type objectType0, CriteriaOperator criteria) {
             isLoading = true;
             try {
-                List<object> objects0 = null;
-                var preResults = new List<PreResult>();
-                var postResults = new List<PostResult>();
-                var statement0 = PhaseOne(mapping0, objectType0, criteria);
-                preResults.Add(new PreResult() { Mapping = mapping0, ObjectType = objectType0, Statement = statement0 });
-                while(preResults.Count > 0) {
-                    var statements = preResults.Select(p => p.Statement).ToArray();
-                    var selectedData = Storage.DataStore.SelectData(statements);
-                    var toLoad = new List<PreResult>();
-                    for(int i = 0; i < selectedData.ResultSet.Length; i++) {
-                        var mapping = preResults[i].Mapping;
-                        var result = selectedData.ResultSet[i];
-                        var objects = PhaseTwo(mapping, preResults[i].ObjectType, result, toLoad);
-                        if(objects0 == null) {
-                            objects0 = objects;
-                        }
-                        postResults.Add(new PostResult() { Mapping = mapping, Objects = objects, Result = result });
-                    }
-                    preResults = toLoad;
-                }
-                foreach(var postResult in postResults) {
-                    PhaseThree(postResult.Mapping, postResult.Objects, postResult.Result);
-                }
-                return objects0;
+                return doer.Invoke();
             }
             finally {
                 isLoading = false;
             }
         }
         public override void SaveObjects(ICollection toInsert, ICollection toUpdate, ICollection toDelete) {
-            var statements = new List<ModificationStatement>();
-            var identityAwaiters = new List<Action<object>>();
-            foreach(var obj in toDelete) {
-                DeleteObject(obj, statements);
-            }
-            foreach(var obj in toInsert) {
-                InsertObject(obj, statements, identityAwaiters);
-            }
-            foreach(var obj in toUpdate) {
-                UpdateObject(obj, statements);
-            }
-            var result = Storage.DataStore.ModifyData(statements.ToArray());
-            foreach(var identity in result.Identities) {
-                identityAwaiters[identity.Tag - 1].Invoke(identity.Value);
-            }
-        }
-        private void DeleteObject(object obj, IList<ModificationStatement> statements) {
-            if(Storage.Mappings.TryGetValue(obj.GetType(), out var mapping)) {
-                var statement = new DeleteStatement(mapping.Table, null);
-                SetupUpdateDeleteStatement(statement, obj, mapping);
-                statements.Add(statement);
-            }
-        }
-        private void InsertObject(object obj, IList<ModificationStatement> statements, List<Action<object>> identityAwaiters) {
-            if(Storage.Mappings.TryGetValue(obj.GetType(), out var mapping)) {
-                var statement = new InsertStatement(mapping.Table, null);
-                if(mapping.Table.PrimaryKey != null) {
-                    foreach(var columnName in mapping.Table.PrimaryKey.Columns) {
-                        var column = mapping.Table.GetColumn(columnName);
-                        if(column.IsIdentity) {
-                            identityAwaiters.Add(v => { mapping.SetKey(obj, v); });
-                            statement.IdentityColumn = column.Name;
-                            statement.IdentityColumnType = column.ColumnType;
-                            statement.IdentityParameter = new ParameterValue(identityAwaiters.Count);
-                            break;
-                        }
-                    }
-                }
-                SetupInsertUpdateStatement(statement, obj, mapping);
-                statements.Add(statement);
-            }
-        }
-        private void UpdateObject(object obj, IList<ModificationStatement> statements) {
-            if(Storage.Mappings.TryGetValue(obj.GetType(), out var mapping)) {
-                var statement = new UpdateStatement(mapping.Table, null);
-                SetupUpdateDeleteStatement(statement, obj, mapping);
-                SetupInsertUpdateStatement(statement, obj, mapping);
-                statements.Add(statement);
-            }
-        }
-        private void SetupUpdateDeleteStatement(ModificationStatement statement, object obj, DataStoreMapping mapping) {
-            var criteria = new BinaryOperator(objectSpace.GetKeyPropertyName(obj.GetType()), objectSpace.GetKeyValue(obj));
-            statement.Condition = SimpleDataStoreCriteriaVisitor.Process(criteria, mapping.Table, statement.Alias);
-        }
-        private void SetupInsertUpdateStatement(ModificationStatement statement, object obj, DataStoreMapping mapping) {
-            var values = new object[mapping.Table.Columns.Count];
-            mapping.Save(obj, values);
-            for(int i = 0; i < values.Length; i++) {
-                var column = mapping.Table.Columns[i];
-                if(!column.IsIdentity) {
-                    statement.Operands.Add(new QueryOperand(column, null));
-                    statement.Parameters.Add(new OperandValue(values[i]));
-                }
-            }
+            var saver = new DataStoreObjectSaver(Storage.Mappings, Storage.DataStore);
+            saver.SaveObjects(toInsert, toUpdate, toDelete);
         }
     }
 
-    public class DataStoreMapping {
-        public DBTable Table;
-        public Func<object> Create;
-        public Action<object, object[], IObjectSpace> Load;
-        public Action<object, object[]> Save;
-        public Action<object, object> SetKey;
-        public IEnumerable<Column> RefColumns;
-        public struct Column {
-            public int Index;
-            public Type Type;
-        }
-    }
 
     public class PostOfficeClient {
         static PostOfficeClient() {
@@ -292,7 +137,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             mAccount.Table.AddColumn(new DBColumn("UserName", true, null, 255, DBColumnType.String));
             mAccount.Table.AddColumn(new DBColumn("PublicName", false, null, 1024, DBColumnType.String));
             mAccount.Create = () => new Account();
-            mAccount.Load = (obj, values, os) => {
+            mAccount.Load = (obj, values, omap) => {
                 ((Account)obj).SetKey((string)values[0]);
                 ((Account)obj).PublicName = (string)values[1];
             };
@@ -300,6 +145,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 values[0] = ((Account)obj).UserName;
                 values[1] = ((Account)obj).PublicName;
             };
+            mAccount.GetKey = (obj) => ((Account)obj).UserName;
             mAccount.RefColumns = Enumerable.Empty<DataStoreMapping.Column>();
             Mappings.Add(typeof(Account), mAccount);
             var mMessage = new DataStoreMapping();
@@ -316,13 +162,14 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             mMessage.SetKey = (obj, key) => {
                 ((Message)obj).SetKey((int)key);
             };
-            mMessage.Load = (obj, values, os) => {
+            mMessage.GetKey = (obj) => ((Message)obj).ID;
+            mMessage.Load = (obj, values, omap) => {
                 var o = (Message)obj;
                 o.SetKey((int)values[0]);
                 o.Subject = (string)values[1];
                 o.Body = (string)values[2];
-                o.Sender = os.GetObjectByKey<Account>(values[3]);
-                o.Recepient = os.GetObjectByKey<Account>(values[4]);
+                o.Sender = omap.Get<Account>(values[3]);
+                o.Recepient = omap.Get<Account>(values[4]);
             };
             mMessage.Save = (obj, values) => {
                 var o = (Message)obj;
@@ -356,7 +203,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             var idsAccount = new List<string>();
             var dtAccounts = ds.Tables["Accounts"];
             for(int i = 0; i < 200; i++) {
-                var id = MakeId(rnd, 20);
+                var id = MakeTosh(rnd, 20);
                 idsAccount.Add(id);
                 dtAccounts.Rows.Add(id, "User-" + id);
             }
@@ -377,7 +224,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
             }
         }
-        private string MakeId(Random rnd, int length) {
+        private string MakeTosh(Random rnd, int length) {
             var chars = new char[length];
             for(int i = 0; i < length; i++) {
                 chars[i] = (char)('a' + rnd.Next(26));
@@ -390,31 +237,10 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 if(sb.Length > 0) {
                     sb.Append(" ");
                 }
-                var w = MakeId(rnd, 1 + rnd.Next(13));
+                var w = MakeTosh(rnd, 1 + rnd.Next(13));
                 sb.Append(w);
             }
             return sb.ToString();
-        }
-    }
-
-    class SimpleDataStoreCriteriaVisitor : ClientCriteriaVisitorBase {
-        private DBTable table;
-        private string alias;
-        public SimpleDataStoreCriteriaVisitor(DBTable table, string alias) {
-            this.table = table;
-            this.alias = alias;
-        }
-        protected override CriteriaOperator Visit(OperandProperty theOperand) {
-            var column = table.GetColumn(theOperand.PropertyName);
-            if(column != null) {
-                return new QueryOperand(table.GetColumn(theOperand.PropertyName), alias);
-            }
-            else {
-                return null;
-            }
-        }
-        public static CriteriaOperator Process(CriteriaOperator criteria, DBTable table, string alias) {
-            return new SimpleDataStoreCriteriaVisitor(table, alias).Process(criteria);
         }
     }
 

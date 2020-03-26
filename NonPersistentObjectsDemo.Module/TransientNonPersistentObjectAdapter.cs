@@ -50,8 +50,8 @@ namespace NonPersistentObjectsDemo.Module {
                 Object obj = objectMap.Get(e.ObjectType, e.Key);
                 if(obj == null) {
                     obj = factory.GetObjectByKey(e.ObjectType, e.Key);
-                    if(obj!= null) {
-                        //objectMap.Add(e.ObjectType, e.Key, obj);
+                    if(obj!= null && !objectMap.Contains(obj)) {
+                        objectMap.Add(e.ObjectType, e.Key, obj);
                     }
                 }
                 if(obj!= null) {
@@ -118,6 +118,9 @@ namespace NonPersistentObjectsDemo.Module {
             foreach(var kv in typeMap) {
                 kv.Value.Clear();
             }
+        }
+        public T Get<T>(Object key) {
+            return (T)Get(typeof(T), key);
         }
         public Object Get(Type type, Object key) {
             Dictionary<Object, Object> objectMap;
