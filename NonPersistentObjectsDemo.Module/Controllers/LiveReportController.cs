@@ -16,10 +16,10 @@ namespace NonPersistentObjectsDemo.Module.Controllers {
             if(npos != null) {
                 npos.NeedReloadAdditionalObjectSpaces = true;
             }
-            var filterController = Frame.GetController<FilterController>();
-            if(filterController != null) {
-                filterController.AllowFilterNonPersistentObjects = true;
-            }
+            //var filterController = Frame.GetController<FilterController>();
+            //if(filterController != null) {
+            //    filterController.AllowFilterNonPersistentObjects = true;
+            //}
         }
     }
 }
