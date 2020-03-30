@@ -9,44 +9,35 @@ using DevExpress.Persistent.Base;
 namespace NonPersistentObjectsDemo.Module {
 
     public class NonPersistentObjectSpaceHelper : IDisposable {
-        public static bool UseSharedAdditionalObjectSpace = false; //TODO: remove + unused members
         private XafApplication application;
-        private IObjectSpace additionalObjectSpace;
+        private Type[] basePersistentTypes;
         public List<Action<NonPersistentObjectSpace>> AdapterCreators { get; }
 
-        public NonPersistentObjectSpaceHelper(XafApplication application) {
+        public NonPersistentObjectSpaceHelper(XafApplication application, params Type[] basePersistentTypes) {
             this.application = application;
+            this.basePersistentTypes = basePersistentTypes;
             this.AdapterCreators = new List<Action<NonPersistentObjectSpace>>();
             application.ObjectSpaceCreated += Application_ObjectSpaceCreated;
-            if(UseSharedAdditionalObjectSpace) {
-                additionalObjectSpace = CreatePersistentObjectSpace();
-            }
+            NonPersistentObjectSpace.UseKeyComparisonToDetermineIdentity = true;
+            NonPersistentObjectSpace.NeedSetModifiedOnObjectChangedDefault = true;
         }
         public void Dispose() {
             application.ObjectSpaceCreated -= Application_ObjectSpaceCreated;
-            if(additionalObjectSpace != null) {
-                additionalObjectSpace.Dispose();
-                additionalObjectSpace = null;
-            }
         }
         private void Application_ObjectSpaceCreated(Object sender, ObjectSpaceCreatedEventArgs e) {
             if(e.ObjectSpace is NonPersistentObjectSpace) {
                 NonPersistentObjectSpace npos = (NonPersistentObjectSpace)e.ObjectSpace;
-                if(UseSharedAdditionalObjectSpace) {
-                    npos.AdditionalObjectSpaces.Add(additionalObjectSpace);
+                if(basePersistentTypes != null) {
+                    foreach(var type in basePersistentTypes) {
+                        IObjectSpace persistentObjectSpace = application.CreateObjectSpace(type);
+                        npos.AdditionalObjectSpaces.Add(persistentObjectSpace);
+                    }
                 }
-                else {
-                    IObjectSpace persistentObjectSpace = CreatePersistentObjectSpace();
-                    npos.AdditionalObjectSpaces.Add(persistentObjectSpace);
-                    npos.NeedDisposeAdditionalObjectSpaces = true;
-                }
+                npos.NeedDisposeAdditionalObjectSpaces = true;
                 foreach(var adapterCreator in AdapterCreators) {
                     adapterCreator.Invoke(npos);
                 }
             }
-        }
-        private IObjectSpace CreatePersistentObjectSpace() {
-            return application.CreateObjectSpace(typeof(DevExpress.Persistent.BaseImpl.Note));
         }
     }
 }

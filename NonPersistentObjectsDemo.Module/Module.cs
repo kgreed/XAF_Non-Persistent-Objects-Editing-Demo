@@ -33,11 +33,10 @@ namespace NonPersistentObjectsDemo.Module {
         public override void Setup(XafApplication application) {
             base.Setup(application);
             // Manage various aspects of the application UI and behavior at the module level.
-            NonPersistentObjectSpace.UseKeyComparisonToDetermineIdentity = true;
             application.SetupComplete += Application_SetupComplete;
         }
         private void Application_SetupComplete(object sender, EventArgs e) {
-            nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender);
+            nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender, typeof(BaseObject));
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
                 var map = new ObjectMap(typeof(LiveReport));
                 new TransientNonPersistentObjectAdapter(npos, map, new LiveReportFactory(map));
