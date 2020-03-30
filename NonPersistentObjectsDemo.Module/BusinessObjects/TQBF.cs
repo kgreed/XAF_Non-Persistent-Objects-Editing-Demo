@@ -14,6 +14,7 @@ using DevExpress.Xpo;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
+    [VisibleInReports]
     [DevExpress.ExpressApp.DC.XafDefaultProperty(nameof(Address))]
     [NavigationItem("TheQuickBrownFox")]
     public class Order : BaseObject {
@@ -72,6 +73,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
+    [VisibleInReports]
     [NavigationItem("TheQuickBrownFox")]
     public class Product : BaseObject {
         public Product(Session session) : base(session) { }
@@ -88,6 +90,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
+    [VisibleInReports]
     [NavigationItem("TheQuickBrownFox")]
     [DevExpress.ExpressApp.DC.DomainComponent]
     public class LiveReport : NonPersistentObjectBase {

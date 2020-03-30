@@ -16,6 +16,7 @@ using DevExpress.Xpo.DB;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
+    [VisibleInReports]
     [NavigationItem("PostOffice")]
     [DefaultProperty("Subject")]
     [DevExpress.ExpressApp.DC.DomainComponent]
@@ -52,6 +53,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         }
     }
 
+    [VisibleInReports]
     [NavigationItem("PostOffice")]
     [DefaultProperty("PublicName")]
     [DevExpress.ExpressApp.DC.DomainComponent]
