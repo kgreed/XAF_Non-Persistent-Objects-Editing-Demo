@@ -31,9 +31,13 @@ This is a set of classes that represent an external storage example. These class
 
 ### The Quick Brows Fox
 
-This part demonstrates an implementation of a non-persitent object (LiveReport) that represents aggregated results for a group of persistent objects, with calculated scalar and persitent reference properties, and a drill-down collection. The non-persitent class is not editable and its storage is read-only. Persistent objects linked to LiveReport can be opened and edited in separate detail views. The non-persitent object views can be refreshed to show actual data by reloading linked persistent objects.
+This part demonstrates an implementation of a non-persitent object (LiveReport) that represents aggregated results for a group of persistent objects, with calculated scalar and persitent reference properties, and a drill-down collection. The non-persitent class is not editable and its storage is read-only. Persistent objects linked to LiveReport can be opened and edited in separate detail views. The non-persitent object views can be refreshed to show actual data by reloading linked persistent object spaces.
 
 ### Post Office
 
 This part demonstrates an implementation of editable non-persistent objects (Account and Message) that represent entities obtained from an external service (here, InMemoryDataStore is used to keep object data). Objects can be created, deleted and modified, and their changes persisted in the external storage. The FilterController is enabled for these objects, so thir list and lookup list views can be filtered.
+
+### Newsflash
+
+This part demonstrates filtering capabilities. You can filter the Article list view using the built-in FullTextSearch action. Also, after creating a new Article, the Search action is available in the Contact lookup list view. The filtering and sorting at the data source level are also available in a Report created for the Article type.
 

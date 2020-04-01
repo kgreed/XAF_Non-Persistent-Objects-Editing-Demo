@@ -201,19 +201,19 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 ms.Position = 0;
                 ds.ReadXml(ms);
             }
-            var rnd = new Random();
+            var gen = new GenHelper();
             var idsAccount = new List<string>();
             var dtAccounts = ds.Tables["Accounts"];
             for(int i = 0; i < 200; i++) {
-                var id = MakeTosh(rnd, 20);
+                var id = gen.MakeTosh(20);
                 idsAccount.Add(id);
-                dtAccounts.Rows.Add(id, "User-" + id);
+                dtAccounts.Rows.Add(id, gen.GetFullName());
             }
             var dtMessages = ds.Tables["Messages"];
             for(int i = 0; i < 5000; i++) {
-                var id1 = rnd.Next(idsAccount.Count);
-                var id2 = rnd.Next(idsAccount.Count - 1);
-                dtMessages.Rows.Add(null, MakeBlah(rnd, rnd.Next(7)), MakeBlah(rnd, 5 + rnd.Next(100)),
+                var id1 = gen.Next(idsAccount.Count);
+                var id2 = gen.Next(idsAccount.Count - 1);
+                dtMessages.Rows.Add(null, GenHelper.ToTitle(gen.MakeBlah(gen.Next(7))), gen.MakeBlahBlahBlah(5 + gen.Next(100), 7),
                     idsAccount[id1], idsAccount[(id1 + id2 + 1) % idsAccount.Count]);
             }
             ds.AcceptChanges();
@@ -225,24 +225,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                     inMemoryDataStore.ReadXml(reader);
                 }
             }
-        }
-        private string MakeTosh(Random rnd, int length) {
-            var chars = new char[length];
-            for(int i = 0; i < length; i++) {
-                chars[i] = (char)('a' + rnd.Next(26));
-            }
-            return new String(chars);
-        }
-        private string MakeBlah(Random rnd, int length) {
-            var sb = new StringBuilder();
-            for(var i = 0; i <= length; i++) {
-                if(sb.Length > 0) {
-                    sb.Append(" ");
-                }
-                var w = MakeTosh(rnd, 1 + rnd.Next(13));
-                sb.Append(w);
-            }
-            return sb.ToString();
         }
     }
 

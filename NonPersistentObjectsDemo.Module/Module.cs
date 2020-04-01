@@ -46,6 +46,9 @@ namespace NonPersistentObjectsDemo.Module {
                 var map = new ObjectMap(types);
                 new TransientNonPersistentObjectAdapter(npos, map, new PostOfficeFactory(map));
             });
+            nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
+                new NonPersistentObjectSimpleFilteringAdapter(npos);
+            });
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {
             base.CustomizeTypesInfo(typesInfo);
