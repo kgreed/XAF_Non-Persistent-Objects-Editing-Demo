@@ -75,6 +75,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             this.objectSpace = npos;
             objectSpace.ObjectsGetting += ObjectSpace_ObjectsGetting;
             objectSpace.CustomCommitChanges += ObjectSpace_CustomCommitChanges;
+            objectSpace.ObjectGetting += ObjectSpace_ObjectGetting;
         }
         private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
             if(e.ObjectType == typeof(Article) || e.ObjectType == typeof(Contact)) {
@@ -92,6 +93,14 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             }
             e.ShapeRawData = true;
         }
+        private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
+            if(e.SourceObject is Article || e.SourceObject is Contact) {
+                var obj = e.TargetObject as IObjectSpaceLink;
+                if(obj != null && obj.ObjectSpace != null && obj.ObjectSpace != sender) {
+                    obj.ObjectSpace = (IObjectSpace)sender;
+                }
+            }
+        }
         private void ObjectSpace_CustomCommitChanges(object sender, HandledEventArgs e) {
             foreach(var obj in objectSpace.GetObjectsToSave(false)) {
                 if(obj is Article article) {
@@ -103,10 +112,14 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             }
         }
 
-        #region DemoData
         static NonPersistentObjectSimpleFilteringAdapter() {
             contacts = new List<Contact>();
             articles = new List<Article>();
+            CreateDemoData();
+        }
+
+        #region DemoData
+        static void CreateDemoData() {
             var gen = new GenHelper();
             var ids = new List<string>();
             for(int i = 0; i < 200; i++) {
