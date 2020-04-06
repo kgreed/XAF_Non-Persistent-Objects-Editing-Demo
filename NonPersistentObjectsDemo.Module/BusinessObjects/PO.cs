@@ -11,6 +11,7 @@ using DevExpress.Data.Filtering.Helpers;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.DC;
 using DevExpress.Persistent.Base;
+using DevExpress.Persistent.Validation;
 using DevExpress.Xpo;
 using DevExpress.Xpo.DB;
 
@@ -61,6 +62,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         private string userName;
         //[Browsable(false)]
         [DevExpress.ExpressApp.ConditionalAppearance.Appearance("", Enabled = false, Criteria = "Not IsNewObject(This)")]
+        [RuleRequiredField]
         [DevExpress.ExpressApp.Data.Key]
         public string UserName {
             get { return userName; }
@@ -170,8 +172,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 o.SetKey((int)values[0]);
                 o.Subject = (string)values[1];
                 o.Body = (string)values[2];
-                o.Sender = omap.Get<Account>(values[3]);
-                o.Recepient = omap.Get<Account>(values[4]);
+                o.Sender = GetReference<Account>(omap, values[3]);
+                o.Recepient = GetReference<Account>(omap, values[4]);
             };
             mMessage.Save = (obj, values) => {
                 var o = (Message)obj;
@@ -188,6 +190,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             Mappings.Add(typeof(Message), mMessage);
             DataStore.UpdateSchema(false, mAccount.Table, mMessage.Table);
             CreateDemoData();
+        }
+        private static T GetReference<T>(ObjectMap map, object key) {
+            return (key == null) ? default(T) : map.Get<T>(key);
         }
         void CreateDemoData() {
             var inMemoryDataStore = (InMemoryDataStore)DataStore;

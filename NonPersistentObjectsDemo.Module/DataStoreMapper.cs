@@ -67,6 +67,8 @@ namespace NonPersistentObjectsDemo.Module {
             List<DataStoreMapping.Column> refColumns = mapping.RefColumns.ToList();
             foreach(var row in result.Rows) {
                 var key = row.Values[keyColumnIndex];
+                if(key == null)
+                    throw new DataException("Key cannot be null.");
                 var obj = objectMap.Get(objectType, key);
                 if(obj == null) {
                     obj = mapping.Create();
