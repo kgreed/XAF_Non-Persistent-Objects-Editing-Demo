@@ -23,6 +23,18 @@ namespace NonPersistentObjectsDemo.Module {
             objectSpace.ObjectByKeyGetting += ObjectSpace_ObjectByKeyGetting;
             objectSpace.Reloaded += ObjectSpace_Reloaded;
             objectSpace.CustomCommitChanges += ObjectSpace_CustomCommitChanges;
+            objectSpace.ObjectReloading += ObjectSpace_ObjectReloading;
+        }
+        private void ObjectSpace_ObjectReloading(object sender, ObjectGettingEventArgs e) {
+            if(e.SourceObject != null && objectMap.IsKnown(e.SourceObject.GetType())) {
+                if(IsNewObject(e.SourceObject)) {
+                    e.TargetObject = null;
+                }
+                else {
+                    var key = objectSpace.GetKeyValue(e.SourceObject);
+                    e.TargetObject = factory.GetObjectByKey(e.SourceObject.GetType(), key);
+                }
+            }
         }
         private void ObjectSpace_CustomCommitChanges(object sender, HandledEventArgs e) {
             var toSave = objectSpace.GetObjectsToSave(false);
