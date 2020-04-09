@@ -38,5 +38,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 OnPropertyChanged(name);
             }
         }
+        [Browsable(false)]
+        public object This { get { return this; } }
     }
 }
