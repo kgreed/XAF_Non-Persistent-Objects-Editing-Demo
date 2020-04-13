@@ -38,16 +38,9 @@ namespace NonPersistentObjectsDemo.Module {
         private void Application_SetupComplete(object sender, EventArgs e) {
             nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender, typeof(BaseObject));
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-                var map = new ObjectMap(typeof(LiveReport));
-                new TransientNonPersistentObjectAdapter(npos, map, new LiveReportFactory(map));
-            });
-            nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
                 var types = new Type[] { typeof(Account), typeof(Message) };
                 var map = new ObjectMap(types);
                 new TransientNonPersistentObjectAdapter(npos, map, new PostOfficeFactory(map));
-            });
-            nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
-                new NonPersistentObjectSimpleFilteringAdapter(npos);
             });
         }
         public override void CustomizeTypesInfo(ITypesInfo typesInfo) {

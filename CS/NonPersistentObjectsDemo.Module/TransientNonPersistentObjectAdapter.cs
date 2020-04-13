@@ -41,7 +41,7 @@ namespace NonPersistentObjectsDemo.Module {
             var toInsert = new List<object>();
             var toUpdate = new List<object>();
             foreach(var obj in toSave) {
-                if(objectSpace.IsNewObject(obj)) {// or check the object map?
+                if(objectSpace.IsNewObject(obj)) {
                     toInsert.Add(obj);
                 }
                 else {

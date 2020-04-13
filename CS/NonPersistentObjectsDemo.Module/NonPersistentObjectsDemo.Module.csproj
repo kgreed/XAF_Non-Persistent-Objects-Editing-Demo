@@ -108,11 +108,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusinessObjects\NonPersistentObjects.cs" />
-    <Compile Include="BusinessObjects\PO.cs" />
-    <Compile Include="BusinessObjects\NF.cs" />
-    <Compile Include="BusinessObjects\TQBF.cs" />
-    <Compile Include="Controllers\LiveReportController.cs" />
+    <Compile Include="BusinessObjects\AuxiliaryObjects.cs" />
+    <Compile Include="BusinessObjects\AuxiliaryStorage.cs" />
+    <Compile Include="BusinessObjects\NonPersistentObjectBase.cs" />
     <Compile Include="DataStoreMapper.cs" />
     <Compile Include="NonPersistentObjectFactory.cs" />
     <Compile Include="NonPersistentObjectSpaceHelper.cs" />

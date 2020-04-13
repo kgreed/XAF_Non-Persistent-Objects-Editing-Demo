@@ -1,131 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DevExpress.Data.Filtering;
-using DevExpress.Data.Filtering.Helpers;
-using DevExpress.ExpressApp;
-using DevExpress.ExpressApp.DC;
-using DevExpress.Persistent.Base;
-using DevExpress.Persistent.Validation;
-using DevExpress.Xpo;
 using DevExpress.Xpo.DB;
 
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
-
-    [VisibleInReports]
-    [NavigationItem("PostOffice")]
-    [DefaultProperty("Subject")]
-    [DevExpress.ExpressApp.DC.DomainComponent]
-    public class Message : NonPersistentObjectBase {
-        private int id;
-        [Browsable(false)]
-        [DevExpress.ExpressApp.Data.Key]
-        public int ID {
-            get { return id; }
-        }
-        public void SetKey(int id) {
-            this.id = id;
-        }
-        private Account _Sender;
-        public Account Sender {
-            get { return _Sender; }
-            set { SetPropertyValue(nameof(Sender), ref _Sender, value); }
-        }
-        private Account _Recepient;
-        public Account Recepient {
-            get { return _Recepient; }
-            set { SetPropertyValue(nameof(Recepient), ref _Recepient, value); }
-        }
-        private string _Subject;
-        public string Subject {
-            get { return _Subject; }
-            set { SetPropertyValue<string>(nameof(Subject), ref _Subject, value); }
-        }
-        private string _Body;
-        [FieldSize(-1)]
-        public string Body {
-            get { return _Body; }
-            set { SetPropertyValue<string>(nameof(Body), ref _Body, value); }
-        }
-    }
-
-    [VisibleInReports]
-    [NavigationItem("PostOffice")]
-    [DefaultProperty("PublicName")]
-    [DevExpress.ExpressApp.DC.DomainComponent]
-    public class Account : NonPersistentObjectBase {
-        private string userName;
-        //[Browsable(false)]
-        [DevExpress.ExpressApp.ConditionalAppearance.Appearance("", Enabled = false, Criteria = "Not IsNewObject(This)")]
-        [RuleRequiredField]
-        [DevExpress.ExpressApp.Data.Key]
-        public string UserName {
-            get { return userName; }
-            set { userName = value; }
-        }
-        public void SetKey(string userName) {
-            this.userName = userName;
-        }
-        private string publicName;
-        public string PublicName {
-            get { return publicName; }
-            set { SetPropertyValue(nameof(PublicName), ref publicName, value); }
-        }
-    }
-
-
-    public class PostOfficeFactory : NonPersistentObjectFactoryBase {
-        private PostOfficeClient Storage => GlobalServiceProvider<PostOfficeClient>.GetService();
-        private bool isLoading = false;
-        private ObjectMap objectMap;
-        public PostOfficeFactory(ObjectMap objectMap) {
-            this.objectMap = objectMap;
-        }
-        public override object GetObjectByKey(Type objectType, object key) {
-            if(key == null) {
-                throw new ArgumentNullException(nameof(key));
-            }
-            if(Storage.Mappings.TryGetValue(objectType, out var mapping)) {
-                return WrapLoading(() => {
-                    var loader = new DataStoreObjectLoader(Storage.Mappings, Storage.DataStore, objectMap);
-                    return loader.LoadObjectByKey(objectType, key);
-                });
-            }
-            throw new NotImplementedException();
-        }
-        public override IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<SortProperty> sorting) {
-            if(Storage.Mappings.TryGetValue(objectType, out var mapping)) {
-                var objects = WrapLoading(() => {
-                    var loader = new DataStoreObjectLoader(Storage.Mappings, Storage.DataStore, objectMap);
-                    return loader.LoadObjects(objectType, criteria);
-                });
-                return objects.Select(o => mapping.GetKey(o)).ToArray();
-            }
-            throw new NotImplementedException();
-        }
-        private T WrapLoading<T>(Func<T> doer) {
-            if(isLoading) {
-                throw new InvalidOperationException();
-            }
-            isLoading = true;
-            try {
-                return doer.Invoke();
-            }
-            finally {
-                isLoading = false;
-            }
-        }
-        public override void SaveObjects(ICollection toInsert, ICollection toUpdate, ICollection toDelete) {
-            var saver = new DataStoreObjectSaver(Storage.Mappings, Storage.DataStore);
-            saver.SaveObjects(toInsert, toUpdate, toDelete);
-        }
-    }
-
 
     public class PostOfficeClient {
         static PostOfficeClient() {
@@ -189,14 +69,15 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             };
             Mappings.Add(typeof(Message), mMessage);
             DataStore.UpdateSchema(false, mAccount.Table, mMessage.Table);
-            CreateDemoData();
+            CreateDemoData((InMemoryDataStore)DataStore);
         }
         private static T GetReference<T>(ObjectMap map, object key) {
             return (key == null) ? default(T) : map.Get<T>(key);
         }
-        void CreateDemoData() {
-            var inMemoryDataStore = (InMemoryDataStore)DataStore;
-            var ds = new DataSet();
+
+        #region Demo Data
+        static void CreateDemoData(InMemoryDataStore inMemoryDataStore) {
+            var ds = new System.Data.DataSet();
             using(var ms = new System.IO.MemoryStream()) {
                 using(var writer = System.Xml.XmlWriter.Create(ms)) {
                     inMemoryDataStore.WriteXml(writer);
@@ -223,7 +104,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             }
             ds.AcceptChanges();
             using(var ms = new System.IO.MemoryStream()) {
-                ds.WriteXml(ms, XmlWriteMode.WriteSchema);
+                ds.WriteXml(ms, System.Data.XmlWriteMode.WriteSchema);
                 ms.Flush();
                 ms.Position = 0;
                 using(var reader = System.Xml.XmlReader.Create(ms)) {
@@ -231,6 +112,6 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
                 }
             }
         }
+        #endregion
     }
-
 }
