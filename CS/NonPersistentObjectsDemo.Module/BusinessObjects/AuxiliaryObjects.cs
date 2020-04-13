@@ -94,13 +94,12 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             }
             throw new NotImplementedException();
         }
-        public override IEnumerable GetObjectKeys(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
+        public override IEnumerable GetObjects(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
             if(Storage.Mappings.TryGetValue(objectType, out var mapping)) {
-                var objects = WrapLoading(() => {
+                return WrapLoading(() => {
                     var loader = new DataStoreObjectLoader(Storage.Mappings, Storage.DataStore, objectMap);
                     return loader.LoadObjects(objectType, criteria);
                 });
-                return objects.Select(o => mapping.GetKey(o)).ToArray();
             }
             throw new NotImplementedException();
         }

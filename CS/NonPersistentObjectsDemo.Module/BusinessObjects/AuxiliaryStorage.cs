@@ -14,7 +14,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         public Dictionary<Type, DataStoreMapping> Mappings { get; private set; }
         public IDataStore DataStore { get; private set; }
         public PostOfficeClient() {
-            this.DataStore = new InMemoryDataStore();
+            this.DataStore = new InMemoryDataStore(AutoCreateOption.DatabaseAndSchema, false);
             this.Mappings = new Dictionary<Type, DataStoreMapping>();
             var mAccount = new DataStoreMapping();
             mAccount.Table = new DBTable("Accounts");

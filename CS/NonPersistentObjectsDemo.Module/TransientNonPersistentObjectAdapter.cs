@@ -93,14 +93,8 @@ namespace NonPersistentObjectsDemo.Module {
             var sourceObjectSpace = BaseObjectSpace.FindObjectSpaceByObject(obj);
             return sourceObjectSpace == null ? false : sourceObjectSpace.IsNewObject(obj);
         }
-        private IList GetList(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
-            var query = factory.GetObjectKeys(objectType, criteria, sorting);
-            var list = new List<object>();
-            foreach(var key in query) {
-                object obj = objectSpace.GetObjectByKey(objectType, key);
-                list.Add(obj);
-            }
-            return list;
+        private IEnumerable GetList(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
+            return factory.GetObjects(objectType, criteria, sorting);
         }
         private void DynamicCollection_ObjectsGetting(object sender, DynamicObjectsGettingEventArgs e) {
             e.Objects = GetList(e.ObjectType, e.Criteria, e.Sorting);
