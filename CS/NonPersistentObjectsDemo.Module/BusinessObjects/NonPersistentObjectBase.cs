@@ -13,7 +13,8 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     public abstract class NonPersistentObjectBase : INotifyPropertyChanged, IObjectSpaceLink {
         private IObjectSpace objectSpace;
-        public IObjectSpace ObjectSpace {
+        protected IObjectSpace ObjectSpace { get { return objectSpace; } }
+        IObjectSpace IObjectSpaceLink.ObjectSpace {
             get { return objectSpace; }
             set {
                 if(objectSpace != value) {
@@ -26,7 +27,7 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
         protected virtual void OnObjectSpaceChanging() { }
         protected virtual void OnObjectSpaceChanged() { }
         protected IObjectSpace FindPersistentObjectSpace(Type type) {
-            return ((NonPersistentObjectSpace)ObjectSpace).AdditionalObjectSpaces.FirstOrDefault(os => os.IsKnownType(type));
+            return ((NonPersistentObjectSpace)objectSpace).AdditionalObjectSpaces.FirstOrDefault(os => os.IsKnownType(type));
         }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName) {
