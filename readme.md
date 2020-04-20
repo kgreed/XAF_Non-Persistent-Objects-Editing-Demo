@@ -22,7 +22,7 @@ Non-persistent objects are kept in an object map. In the [ObjectsGetting](https:
 
 In the [CustomCommitChanges](https://docs.devexpress.com/eXpressAppFramework/DevExpress.ExpressApp.BaseObjectSpace.CustomCommitChanges?v=20.1) event handler, all object changes are processed and passed to the storage in a single atomic operation.
 
-The [NonPersistentObjectSpace\.NeedSetModifiedOnObjectChanged](https://docs.devexpress.com/eXpressAppFramework/DevExpress.ExpressApp.NonPersistentObjectSpace.NeedSetModifiedOnObjectChanged?v=20.1) property is set to *true* to automatically mark non-persistent objects as modified when the *INotifyPropertyChanged.PropertyChanged* event is raised.
+The [NonPersistentObjectSpace\.AutoSetModifiedOnObjectChange](https://docs.devexpress.com/eXpressAppFramework/DevExpress.ExpressApp.NonPersistentObjectSpace.AutoSetModifiedOnObjectChange?v=20.1) property is set to *true* to automatically mark non-persistent objects as modified when the *INotifyPropertyChanged.PropertyChanged* event is raised.
 
 We use a simplified implementation of [IDataStore](https://docs.devexpress.com/CoreLibraries/DevExpress.Xpo.DB.IDataStore) as storage for Non-Persistent Object data.
 
