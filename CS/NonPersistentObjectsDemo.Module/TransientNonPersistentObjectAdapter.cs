@@ -85,7 +85,7 @@ namespace NonPersistentObjectsDemo.Module {
         private void ObjectSpace_ObjectsGetting(object sender, ObjectsGettingEventArgs e) {
             if(objectMap.IsKnown(e.ObjectType)) {
                 var collection = new DynamicCollection(objectSpace, e.ObjectType, e.Criteria, e.Sorting, e.InTransaction);
-                collection.ObjectsGetting += DynamicCollection_ObjectsGetting;
+                collection.ObjectsFetching += DynamicCollection_ObjectsFetching;
                 e.Objects = collection;
             }
         }
@@ -96,9 +96,9 @@ namespace NonPersistentObjectsDemo.Module {
         private IEnumerable GetList(Type objectType, CriteriaOperator criteria, IList<DevExpress.Xpo.SortProperty> sorting) {
             return factory.GetObjects(objectType, criteria, sorting);
         }
-        private void DynamicCollection_ObjectsGetting(object sender, DynamicObjectsGettingEventArgs e) {
+        private void DynamicCollection_ObjectsFetching(object sender, DynamicObjectsFetchingEventArgs e) {
             e.Objects = GetList(e.ObjectType, e.Criteria, e.Sorting);
-            e.ShapeRawData = true;
+            e.ShapeData = true;
         }
     }
 

@@ -19,7 +19,7 @@ namespace NonPersistentObjectsDemo.Module {
             this.AdapterCreators = new List<Action<NonPersistentObjectSpace>>();
             application.ObjectSpaceCreated += Application_ObjectSpaceCreated;
             NonPersistentObjectSpace.UseKeyComparisonToDetermineIdentity = true;
-            NonPersistentObjectSpace.NeedSetModifiedOnObjectChangedDefault = true;
+            NonPersistentObjectSpace.AutoSetModifiedOnObjectChangeByDefault = true;
         }
         public void Dispose() {
             application.ObjectSpaceCreated -= Application_ObjectSpaceCreated;
@@ -33,7 +33,7 @@ namespace NonPersistentObjectsDemo.Module {
                         npos.AdditionalObjectSpaces.Add(persistentObjectSpace);
                     }
                 }
-                npos.NeedDisposeAdditionalObjectSpaces = true;
+                npos.AutoDisposeAdditionalObjectSpaces = true;
                 foreach(var adapterCreator in AdapterCreators) {
                     adapterCreator.Invoke(npos);
                 }
