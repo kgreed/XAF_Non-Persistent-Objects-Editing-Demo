@@ -10,7 +10,6 @@
 
 # How to implement CRUD operations for Non-Persistent Objects stored remotely
 
-
 ## Scenario
 
 This example demonstrates a possible implementation of editable non-persistent objects that represent data stored remotely and separately from the main XAF application database. These non-persistent objects can be created, deleted, and modified. Their changes are persisted in the external storage. The **FilterController** is enabled for these objects, so their list view and lookup list view can be filtered. The built-in **IsNewObject** function is used in the Appearance rule criterion. This rule disables the key property editor after an Account object is saved.
