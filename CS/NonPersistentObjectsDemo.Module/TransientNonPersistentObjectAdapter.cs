@@ -73,7 +73,8 @@ namespace NonPersistentObjectsDemo.Module {
         }
         private void ObjectSpace_ObjectGetting(object sender, ObjectGettingEventArgs e) {
             if(e.SourceObject != null && objectMap.IsKnown(e.SourceObject.GetType())) {
-                if(objectMap.Contains(e.SourceObject) || IsNewObject(e.SourceObject)) {
+                var link = (IObjectSpaceLink)e.SourceObject;
+                if(objectSpace.Equals(link.ObjectSpace) && (objectMap.Contains(e.SourceObject) || IsNewObject(e.SourceObject))) {
                     e.TargetObject = e.SourceObject;
                 }
                 else {
