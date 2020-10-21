@@ -71,7 +71,8 @@ Namespace NonPersistentObjectsDemo.Module
 		End Sub
 		Private Sub ObjectSpace_ObjectGetting(ByVal sender As Object, ByVal e As ObjectGettingEventArgs)
 			If e.SourceObject IsNot Nothing AndAlso objectMap.IsKnown(e.SourceObject.GetType()) Then
-				If objectMap.Contains(e.SourceObject) OrElse IsNewObject(e.SourceObject) Then
+				Dim link = DirectCast(e.SourceObject, IObjectSpaceLink)
+				If objectSpace.Equals(link.ObjectSpace) AndAlso (objectMap.Contains(e.SourceObject) OrElse IsNewObject(e.SourceObject)) Then
 					e.TargetObject = e.SourceObject
 				Else
 					Dim key = objectSpace.GetKeyValue(e.SourceObject)

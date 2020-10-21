@@ -29,9 +29,8 @@ Namespace NonPersistentObjectsDemo.Module.BusinessObjects
 				Return id_Conflict
 			End Get
 		End Property
-'INSTANT VB NOTE: The variable id was renamed since Visual Basic does not handle local variables named the same as class members well:
-		Public Sub SetKey(ByVal id_Conflict As Integer)
-			Me.id_Conflict = id_Conflict
+		Public Sub SetKey(ByVal id As Integer)
+			Me.id_Conflict = id
 		End Sub
 		Private _Sender As Account
 		Public Property Sender() As Account
@@ -93,9 +92,8 @@ Namespace NonPersistentObjectsDemo.Module.BusinessObjects
 				userName_Conflict = value
 			End Set
 		End Property
-'INSTANT VB NOTE: The variable userName was renamed since Visual Basic does not handle local variables named the same as class members well:
-		Public Sub SetKey(ByVal userName_Conflict As String)
-			Me.userName_Conflict = userName_Conflict
+		Public Sub SetKey(ByVal userName As String)
+			Me.userName_Conflict = userName
 		End Sub
 'INSTANT VB NOTE: The field publicName was renamed since Visual Basic does not allow fields to have the same name as other class members:
 		Private publicName_Conflict As String
