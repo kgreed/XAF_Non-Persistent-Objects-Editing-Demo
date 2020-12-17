@@ -39,7 +39,7 @@ namespace NonPersistentObjectsDemo.Module {
             nonPersistentObjectSpaceHelper = new NonPersistentObjectSpaceHelper((XafApplication)sender, typeof(BaseObject));
             nonPersistentObjectSpaceHelper.AdapterCreators.Add(npos => {
                 var types = new Type[] { typeof(Account), typeof(Message) };
-                var map = new ObjectMap(types);
+                var map = new ObjectMap(npos, types);
                 new TransientNonPersistentObjectAdapter(npos, map, new PostOfficeFactory(map));
             });
         }

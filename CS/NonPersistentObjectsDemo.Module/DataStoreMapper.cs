@@ -91,6 +91,7 @@ namespace NonPersistentObjectsDemo.Module {
         private void PhaseThree(DataStoreMapping mapping, List<object> objects, SelectStatementResult result) {
             for(int i = 0; i < objects.Count; i++) {
                 mapping.Load(objects[i], result.Rows[i].Values, objectMap);
+                objectMap.Accept(objects[i]);
             }
         }
         public IList<object> LoadObjects(Type objectType, CriteriaOperator criteria) {

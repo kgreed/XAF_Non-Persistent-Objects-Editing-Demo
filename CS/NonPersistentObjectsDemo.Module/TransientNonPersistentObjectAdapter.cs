@@ -105,7 +105,9 @@ namespace NonPersistentObjectsDemo.Module {
 
     public class ObjectMap {
         private Dictionary<Type, Dictionary<Object, Object>> typeMap;
-        public ObjectMap(params Type[] types) {
+        private NonPersistentObjectSpace objectSpace;
+        public ObjectMap(NonPersistentObjectSpace objectSpace, params Type[] types) {
+            this.objectSpace = objectSpace;
             this.typeMap = new Dictionary<Type, Dictionary<object, object>>();
             foreach(var type in types) {
                 typeMap.Add(type, new Dictionary<object, object>());
@@ -144,6 +146,9 @@ namespace NonPersistentObjectsDemo.Module {
             if(typeMap.TryGetValue(type, out objectMap)) {
                 objectMap.Add(key, obj);
             }
+        }
+        public void Accept(Object obj) {
+            objectSpace.GetObject(obj);
         }
     }
 }
