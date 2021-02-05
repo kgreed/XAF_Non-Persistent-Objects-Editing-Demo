@@ -9,9 +9,6 @@
 
 
 # How to implement CRUD operations for Non-Persistent Objects stored remotely
-<!-- run online -->
-**[[Run Online]](https://codecentral.devexpress.com/255628948/)**
-<!-- run online end -->
 
 ## Scenario
 
