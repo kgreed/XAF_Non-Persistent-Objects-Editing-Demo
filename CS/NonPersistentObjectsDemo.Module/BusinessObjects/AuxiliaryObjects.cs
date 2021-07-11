@@ -10,7 +10,7 @@ using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.DC;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.Validation;
-
+using DevExpress.Xpo;
 namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
     [DefaultClassOptions]
@@ -28,6 +28,9 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             this.id = id;
         }
         private Account _Sender;
+        public string SenderPublicName { get => _Sender.PublicName;
+            set { throw new Exception("Set not implemented"); }
+        }
         public Account Sender {
             get { return _Sender; }
             set { SetPropertyValue(nameof(Sender), ref _Sender, value); }
@@ -68,6 +71,33 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
             this.userName = userName;
         }
         private string publicName;
+
+        private BindingList<Message> _messages;
+         
+       // [DevExpress.ExpressApp.DC.Aggregated]
+        public BindingList<Message> Messages {
+            get {
+                if(_messages == null) {
+                    _messages = new BindingList<Message>( );  // errors here
+                }
+                CriteriaOperator criteria = new BinaryOperator(
+                    new OperandProperty("SenderPublicName"), new OperandValue(PublicName),
+                    BinaryOperatorType.Equal
+                );
+                //CriteriaOperator criteria = new BinaryOperator(
+                //    new OperandProperty("Subject"), new OperandValue(" "),
+                //    BinaryOperatorType.GreaterOrEqual
+                //);
+
+                var mgs = ObjectSpace.GetObjects<Message>(criteria);
+                foreach(var m in mgs ) {
+                    _messages.Add(m);
+                }
+
+                return _messages;
+            }
+        }
+
         public string PublicName {
             get { return publicName; }
             set { SetPropertyValue(nameof(PublicName), ref publicName, value); }
