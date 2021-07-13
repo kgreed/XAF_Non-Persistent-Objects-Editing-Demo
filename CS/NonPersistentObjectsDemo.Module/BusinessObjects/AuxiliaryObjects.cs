@@ -74,22 +74,18 @@ namespace NonPersistentObjectsDemo.Module.BusinessObjects {
 
         private BindingList<Message> _messages;
          
-       // [DevExpress.ExpressApp.DC.Aggregated]
         public BindingList<Message> Messages {
             get {
                 if(_messages == null) {
-                    _messages = new BindingList<Message>( );  // errors here
+                    _messages = new BindingList<Message>( );   
                 }
                 CriteriaOperator criteria = new BinaryOperator(
                     new OperandProperty("SenderPublicName"), new OperandValue(PublicName),
                     BinaryOperatorType.Equal
                 );
-                //CriteriaOperator criteria = new BinaryOperator(
-                //    new OperandProperty("Subject"), new OperandValue(" "),
-                //    BinaryOperatorType.GreaterOrEqual
-                //);
+              
 
-                var mgs = ObjectSpace.GetObjects<Message>(criteria);
+                var mgs = ObjectSpace.GetObjects<Message>(criteria); 
                 foreach(var m in mgs ) {
                     _messages.Add(m);
                 }
